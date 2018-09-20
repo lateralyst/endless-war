@@ -1657,8 +1657,7 @@ poi_list = [
 		str_desc = "A large interior space filled with vacant teller booths and data screens designed to dissplay market data, all powered off. Punch cards and ticker tape are strewn about the silent, empty floor.\n\nExits into Downtown NLACakaNM.",
 		channel = channel_stockexchange,
 		role = "Stock Exchange",
-		coord = (21, 16),
-		pvp = False
+		coord = (21, 16)
 	),
 	EwPoi( # the-bazaar
 		id_poi = poi_id_bazaar,
@@ -1670,8 +1669,7 @@ poi_list = [
 		str_desc = "An open-air marketplace where professional merchants and regular citizens alike can hock their wares. It's currently completely barren.\n\nExits into Brawlden.",
 		channel = channel_bazaar,
 		role = "Bazaar",
-		coord = (21, 11),
-		pvp = False
+		coord = (21, 11)
 	),
 	EwPoi( # the-cinema
 		id_poi = poi_id_cinema,
@@ -1687,8 +1685,7 @@ poi_list = [
 		str_desc = "A delightfully run-down movie theater, with warm carpeted walls fraying ever so slightly. Films hand picked by the Rowdy Fucker and/or Cop Killer are regularly screened.\n\nExits into Astatine Heights.",
 		channel = channel_cinema,
 		role = "Cinema",
-		coord = (17, 4),
-		pvp = False
+		coord = (17, 4)
 	),
 	EwPoi( # food-court
 		id_poi = poi_id_foodcourt,
@@ -1706,7 +1703,6 @@ poi_list = [
 		channel = channel_foodcourt,
 		role = "Food Court",
 		coord = (16, 17),
-		pvp = False,
 		vendors = [
 			vendor_pizzahut,
 			vendor_tacobell,
@@ -1727,8 +1723,7 @@ poi_list = [
 		str_desc = "An expansive campus housing massive numbers of students and administrators, all here in pursuit of knowledge. The campus is open to visitors, but there's nobody here.\n\nExits into Gatlingsdale.",
 		channel = channel_nlacu,
 		role = "NLAC U",
-		coord = (15, 9),
-		pvp = False
+		coord = (15, 9)
 	),
 	EwPoi( # battle-arena
 		id_poi = poi_id_arena,
@@ -1756,8 +1751,7 @@ poi_list = [
 		str_desc = "A modest, easily overlooked building, but containing all the facilities necessary for becoming a killing machine. Bamboo and parchment walls separate the dojo floor into large tatami-matted sections.\n\nExits into South Sleezeborough.",
 		channel = channel_dojo,
 		role = "Dojo",
-		coord = (11, 23),
-		pvp = False
+		coord = (11, 23)
 	),
 	EwPoi( # speakeasy
 		id_poi = poi_id_speakeasy,
@@ -1772,7 +1766,6 @@ poi_list = [
 		channel = channel_speakeasy,
 		role = "Speakeasy",
 		coord = (39, 11),
-		pvp = False,
 		vendors = [
 			vendor_bar
 		]
@@ -1792,8 +1785,7 @@ poi_list = [
 		str_desc = "The darkened derelict 7-11 stands as it always has, a steadfast pillar of NLACakaNM culture. On its dirty exterior walls are spraypainted messages about \"patch notes\", \"github\", and other unparseable nonsense.\n\nExits into Poudrin Alley.",
 		channel = channel_711,
 		role = "7-11",
-		coord = (19, 25),
-		pvp = False
+		coord = (19, 25)
 	),
 	EwPoi( # the-labs
 		id_poi = poi_id_slimeoidlab,
@@ -1813,8 +1805,7 @@ poi_list = [
 		str_desc = "A nondescript building containing mysterious SlimeCorp industrial equipment. Large glass tubes and metallic vats seem to be designed to serve as incubators. The lab is empty and the equipment is not being powered.\n\nExits into Brawlden.",
 		channel = channel_slimeoidlab,
 		role = "Slimeoid Lab",
-		coord = (28, 1),
-		pvp = False
+		coord = (28, 1)
 	),
 	EwPoi( # the-mines
 		id_poi = poi_id_mine,
@@ -1826,8 +1817,7 @@ poi_list = [
 		str_desc = "These mines once glowed with the power of slime, but they've now gone dark, sucked dry by the NEGASLIME. Prolonged contact with the NEGASLIME has temporarily suffused the walls with profane energy, making them solid to ghosts.",
 		coord = (34, 18),
 		channel = channel_mines,
-		role = "Mines",
-		pvp = False
+		role = "Mines"
 	),
 	EwPoi( # the-casino
 		id_poi = poi_id_thecasino,
@@ -1840,8 +1830,7 @@ poi_list = [
 		str_desc = "The casino is filled with tables and machines for playing games of chance, and garishly decorated wall-to-wall. Lights which normally flash constantly cover everything, but now they all sit unlit.",
 		coord = (29, 16),
 		channel = channel_casino,
-		role = "Casino",
-		pvp = False
+		role = "Casino"
 	)
 ]
 
@@ -1862,3 +1851,15 @@ for poi in poi_list:
 	id_to_poi[poi.id_poi] = poi
 	for alias in poi.alias:
 		id_to_poi[alias] = poi
+
+limited_pvp_area_ids = [
+	poi_id_slimecorphq,
+	poi_id_stockexchange,
+	poi_id_cinema,
+	poi_id_foodcourt,
+	poi_id_nlacu,
+	poi_id_dojo,
+	poi_id_slimeoidlab,
+	poi_id_mine,
+	poi_id_thecasino
+]

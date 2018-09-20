@@ -138,6 +138,7 @@ async def attack(cmd):
 
 	user_data = EwUser(member = cmd.message.author)
 	weapon = ewcfg.weapon_map.get(user_data.weapon)
+	disp_name = cmd.message.author.display_name
 
 	if ewmap.poi_is_pvp(user_data.poi) == False:
 		response = "You must go elsewhere to commit gang violence."
@@ -270,7 +271,7 @@ async def attack(cmd):
 				response = "{name_target}\'s ghost has been **BUSTED**!!".format(name_target = member.display_name)
 				
 				if coinbounty > 0:
-					response += "\n\n SlimeCorp transfers {} SlimeCoin to {}\'s account.".format(str(coinbounty), cmd.message.author.display_name)
+					response += "\n\n SlimeCorp transfers {} SlimeCoin to {}\'s account.".format(str(coinbounty), disp_name)
 
 				#adjust busts
 				#user_data.busts += 1
@@ -283,19 +284,19 @@ async def attack(cmd):
 				if weapon != None:
 					if miss:
 						response = "{}".format(weapon.str_miss.format(
-							name_player = cmd.message.author.display_name,
+							name_player = disp_name,
 							name_target = member.display_name + "\'s ghost"
 						))
 					else:
 						response = weapon.str_damage.format(
-							name_player = cmd.message.author.display_name,
+							name_player = disp_name,
 							name_target = member.display_name + "\'s ghost",
 							hitzone = randombodypart,
 							strikes = strikes
 						)
 						if crit:
 							response += " {}".format(weapon.str_crit.format(
-								name_player = cmd.message.author.display_name,
+								name_player = disp_name,
 								name_target = member.display_name + "\'s ghost"
 							))
 						response += " {target_name} loses {damage} antislime!".format(
@@ -405,19 +406,19 @@ async def attack(cmd):
 
 					if weapon != None:
 						response = weapon.str_damage.format(
-							name_player = cmd.message.author.display_name,
+							name_player = disp_name,
 							name_target = member.display_name,
 							hitzone = randombodypart,
 							strikes = strikes
 						)
 						if crit:
 							response += " {}".format(weapon.str_crit.format(
-								name_player = cmd.message.author.display_name,
+								name_player = disp_name,
 								name_target = member.display_name
 							))
 
 						response += "\n\n{}".format(weapon.str_kill.format(
-							name_player = cmd.message.author.display_name,
+							name_player = disp_name,
 							name_target = member.display_name,
 							emote_skull = ewcfg.emote_slimeskull
 						))
@@ -427,7 +428,7 @@ async def attack(cmd):
 						shootee_data.trauma = ""
 					
 					if coinbounty > 0:
-						response += "\n\n SlimeCorp transfers {} SlimeCoin to {}\'s account.".format(str(coinbounty), cmd.message.author.display_name)
+						response += "\n\n SlimeCorp transfers {} SlimeCoin to {}\'s account.".format(str(coinbounty), disp_name)
 
 					#adjust kills and bounty
 					ewstats.change_stat(user = user_data, metric = ewcfg.stat_kills, n = 1)
@@ -445,19 +446,19 @@ async def attack(cmd):
 					if weapon != None:
 						if miss:
 							response = "{}".format(weapon.str_miss.format(
-								name_player = cmd.message.author.display_name,
+								name_player = disp_name,
 								name_target = member.display_name
 							))
 						else:
 							response = weapon.str_damage.format(
-								name_player = cmd.message.author.display_name,
+								name_player = disp_name,
 								name_target = member.display_name,
 								hitzone = randombodypart,
 								strikes = strikes
 							)
 							if crit:
 								response += " {}".format(weapon.str_crit.format(
-									name_player = cmd.message.author.display_name,
+									name_player = disp_name,
 									name_target = member.display_name
 								))
 							response += " {target_name} loses {damage} slime!".format(
@@ -472,12 +473,40 @@ async def attack(cmd):
 								target_name = member.display_name,
 								damage = damage
 							)
+
+				poi = user_data.poi
+
+				# sub-area consequences
+				if poi in ewcfg.limited_pvp_area_ids:
+					r = random.randint(1, 100)
+					user_dead = False
+
+					if poi in [ewcfg.poi_id_slimecorphq, ewcfg.poi_id_slimeoidlab]:
+						response = "Immediately, panels open in the sleek white walls, revealing turrets which swivel to point at {player}. " \
+						           "After a blinding burst of green light and a sizzling sound, {player} has been reduced to a smoking black " \
+						           "smear on the floor, which SlimeCorp sanitation drones wipe away moments later. {slimeskull}".format(
+										player = disp_name,
+										slimeskull = ewcfg.emote_slimeskull
+									)
+						user_dead = True
+					elif poi == ewcfg.poi_id_stockexchange and r <= 10:  # 10 percent chance
+						response = "The cops are immediately called, but the response is sluggish as usual. Terrified of losing their hard-earned investments, " \
+						           "middle-aged men in suits and ties rush {player} down, bludgeoning him to death with their briefcases. {slimeskull}" \
+						           " The market is saved!!".format(
+										player = disp_name,
+										slimeskull = ewcfg.emote_slimeskull
+									)
+
+
+					if user_dead:
+						user_data.die()
+
 			else:
 				response = 'You are unable to attack {}.'.format(member.display_name)
 
 			# Add level up text to response if appropriate
 			if user_inital_level < user_data.slimelevel: 
-				response += "\n\n{} has been empowered by slime and is now a level {} slimeboi!".format(cmd.message.author.display_name, user_data.slimelevel)
+				response += "\n\n{} has been empowered by slime and is now a level {} slimeboi!".format(disp_name, user_data.slimelevel)
 
 			# Give slimes to the boss if possible.
 			boss_member = None
@@ -610,10 +639,12 @@ async def spar(cmd):
 					# Target is a juvenile.
 					was_juvenile = True
 
-				elif (user_iskillers and (sparred_data.life_state == ewcfg.life_state_enlisted and sparred_data.faction == ewcfg.faction_killers)) or (user_isrowdys and (sparred_data.life_state == ewcfg.life_state_enlisted and sparred_data.faction == ewcfg.faction_rowdys)):
+				elif (user_iskillers and (sparred_data.life_state == ewcfg.life_state_enlisted and sparred_data.faction == ewcfg.faction_killers)) or \
+						(user_isrowdys and (sparred_data.life_state == ewcfg.life_state_enlisted and sparred_data.faction == ewcfg.faction_rowdys)):
 					# User can be sparred.
 					was_sparred = True
-				elif (user_iskillers and (sparred_data.life_state == ewcfg.life_state_enlisted and sparred_data.faction == ewcfg.faction_rowdys)) or (user_isrowdys and (sparred_data.life_state == ewcfg.life_state_enlisted and sparred_data.faction == ewcfg.faction_killers)):
+				elif (user_iskillers and (sparred_data.life_state == ewcfg.life_state_enlisted and sparred_data.faction == ewcfg.faction_rowdys)) or \
+						(user_isrowdys and (sparred_data.life_state == ewcfg.life_state_enlisted and sparred_data.faction == ewcfg.faction_killers)):
 					# Target is a member of the opposing faction.
 					was_enemy = True
 
@@ -770,7 +801,8 @@ async def annoint(cmd):
 
 				user_data.persist()
 
-				response = "You place your weapon atop the poudrin and annoint it with slime. It is now known as {}!\n\nThe name draws you closer to your weapon. The poudrin was destroyed in the process.".format(annoint_name)
+				response = "You place your weapon atop the poudrin and annoint it with slime. It is now known as {}!" \
+				           "\n\nThe name draws you closer to your weapon. The poudrin was destroyed in the process.".format(annoint_name)
 
 	# Send the response to the player.
 	await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, response))
