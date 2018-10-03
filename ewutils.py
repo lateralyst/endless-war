@@ -194,7 +194,7 @@ def databaseClose(conn_info):
 
 """ format responses with the username: """
 def formatMessage(user_target, message):
-	return "*{}*: {}".format(user_target.display_name, message)
+	return "*{}*: {}".format(user_target.display_name, message).replace("@", "\{at\}")
 
 """ decay slime totals for all users """
 def decaySlimes(id_server = None):
@@ -448,10 +448,21 @@ def execute_sql_query(sql_query = None):
 
 
 """
-	
+	Send a message to multiple chat channels at once.
 """
 async def post_in_multiple_channels(message = None, channels = None, client = None):
 	for channel in channels:
 		if channel.type == discord.ChannelType.text:
 			await client.send_message(channel, message)
 	return
+
+"""
+	Find a chat channel by name in a server.
+"""
+def get_channel(server = None, channel_name = ""):
+	channel = None
+	for chan in server.channels:
+		if chan.name == channel_name:
+			channel = chan
+
+	return channel

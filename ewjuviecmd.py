@@ -18,7 +18,6 @@ last_mismined_times = {}
 
 """ player enlists in a faction/gang """
 async def enlist(cmd):
-	resp = await ewcmd.start(cmd = cmd)
 	time_now = int(time.time())
 	response = ""
 	user_data = EwUser(member = cmd.message.author)
@@ -61,7 +60,7 @@ async def enlist(cmd):
 		response = "You can't do that right now, bitch."
 
 	# Send the response to the player.
-	await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, response))
+	await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, response))
 
 """ mine for slime (or endless rocks) """
 async def mine(cmd):
@@ -106,7 +105,7 @@ async def mine(cmd):
 
 			last_mismined_times[cmd.message.author.id] = mismined
 
-			if mismined['count'] >= 5:
+			if mismined['count'] >= 7:  # up to 6 messages can be buffered by discord and people have been dying unfairly because of that
 				# Death
 				last_mismined_times[cmd.message.author.id] = None
 				user_data.die()
@@ -114,6 +113,8 @@ async def mine(cmd):
 				
 				await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You have died in a mining accident."))
 				await ewrolemgr.updateRoles(client = cmd.client, member = cmd.message.author)
+				sewerchannel = ewutils.get_channel(cmd.message.server, ewcfg.channel_sewers)
+				await cmd.client.send_message(sewerchannel, "{} ".format(ewcfg.emote_slimeskull) + ewutils.formatMessage(cmd.message.author, "You have died in a mining accident. {}".format(ewcfg.emote_slimeskull)))
 			else:
 				await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You've exhausted yourself from mining. You'll need some refreshment before getting back to work."))
 		else:
@@ -128,7 +129,7 @@ async def mine(cmd):
 			user_initial_level = user_data.slimelevel
 
 			# Add mined slime to the user.
-			user_data.change_slimes(n = 10 * (2 ** user_data.slimelevel), source = ewcfg.source_mining)
+			user_data.change_slimes(n = int(10 * (1.9 ** user_data.slimelevel)), source = ewcfg.source_mining)
 
 			was_levelup = True if user_initial_level < user_data.slimelevel else False
 
@@ -170,7 +171,7 @@ async def mine(cmd):
 	else:
 		# Mismined. Potentially kill the player for spamming the wrong channel.
 		mismined = last_mismined_times.get(cmd.message.author.id)
-		resp = await ewcmd.start(cmd = cmd)
+
 
 		if mismined == None:
 			mismined = {
@@ -187,14 +188,16 @@ async def mine(cmd):
 
 		last_mismined_times[cmd.message.author.id] = mismined
 
-		if mismined['count'] >= 3:
+		if mismined['count'] >= 5:
 			# Death
 			last_mismined_times[cmd.message.author.id] = None
 
 			user_data.die()
 			user_data.persist()
 
-			await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, "You have died in a mining accident."))
+			await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You have died in a mining accident."))
 			await ewrolemgr.updateRoles(client = cmd.client, member = cmd.message.author)
+			sewerchannel = ewutils.get_channel(cmd.message.server, ewcfg.channel_sewers)
+			await cmd.client.send_message(sewerchannel, "{} ".format(ewcfg.emote_slimeskull) + ewutils.formatMessage(cmd.message.author, "You have died in a mining accident. {}".format(ewcfg.emote_slimeskull)))
 		else:
-			await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, "You can't mine here. Go to the mines."))
+			await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You can't mine here. Go to the mines."))

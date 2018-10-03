@@ -87,7 +87,7 @@ async def pachinko(cmd):
 				await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, response))
 				await asyncio.sleep(1)
 
-			winnings = winballs * 250
+			winnings = int(winballs * ewcfg.slimes_perpachinko / 2)
 
 			# Significant time has passed since the user issued this command. We can't trust that their data hasn't changed.
 			user_data = EwUser(member = cmd.message.author)
@@ -109,7 +109,6 @@ async def pachinko(cmd):
 
 
 async def craps(cmd):
-	resp = await ewcmd.start(cmd = cmd)
 	time_now = int(time.time())
 
 	global last_crapsed_times
@@ -176,7 +175,7 @@ async def craps(cmd):
 			response = "Specify how much SlimeCoin you will wager."
 
 	# Send the response to the player.
-	await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, response))
+	await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, response))
 
 async def slots(cmd):
 	resp = await ewcmd.start(cmd = cmd)
@@ -269,7 +268,7 @@ async def slots(cmd):
 				response += "\n\n**Tonight seems like a good night for VIOLENCE. The machine spits out {:,} SlimeCoin.**".format(winnings)
 
 			elif roll1 == ewcfg.emote_111 and roll2 == ewcfg.emote_111 and roll3 == ewcfg.emote_111:
-				winnings = 1111
+				winnings = 111
 				response += "\n\n**111111111111111111111111111111111111111111111111**\n\n**The machine spits out {:,} SlimeCoin.**".format(winnings)
 
 			elif roll1 == ewcfg.emote_copkiller and roll2 == ewcfg.emote_copkiller and roll3 == ewcfg.emote_copkiller:

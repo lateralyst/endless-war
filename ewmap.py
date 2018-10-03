@@ -211,7 +211,7 @@ class EwPath:
 """
 	Add coord_next to the path.
 """
-def path_step(path, coord_next):
+def path_step(path, coord_next, user_data):
 	visited_set_y = path.visited.get(coord_next[0])
 	if visited_set_y == None:
 		path.visited[coord_next[0]] = { coord_next[1]: True }
@@ -224,7 +224,11 @@ def path_step(path, coord_next):
 	cost_next = map_world[coord_next[1]][coord_next[0]]
 
 	if cost_next == sem_city or cost_next == sem_city_alias:
-		cost_next = 0
+		next_poi = ewcfg.coord_to_poi.get(coord_next)
+		if cost_next == sem_city and inaccessible(user_data = user_data, poi = next_poi):
+			cost_next = 5000
+		else:
+			cost_next = 0
 
 	path.steps.append(coord_next)
 	path.cost += cost_next
@@ -234,10 +238,10 @@ def path_step(path, coord_next):
 """
 	Returns a new path including all of path_base, with the next step coord_next.
 """
-def path_branch(path_base, coord_next):
+def path_branch(path_base, coord_next, user_data):
 	path_next = EwPath(path_from = path_base)
 
-	if path_step(path_next, coord_next) == False:
+	if path_step(path_next, coord_next, user_data) == False:
 		return None
 	
 	return path_next
@@ -246,7 +250,8 @@ def path_to(
 	coord_start = None,
 	coord_end = None,
 	poi_start = None,
-	poi_end = None
+	poi_end = None,
+	user_data = None
 ):
 	score_golf = 65535
 	paths_finished = []
@@ -273,7 +278,7 @@ def path_to(
 	)
 
 	for neigh in neighbors(coord_start):
-		path_next = path_branch(path_base, neigh)
+		path_next = path_branch(path_base, neigh, user_data)
 		if path_next != None:
 			paths_walking.append(path_next)
 
@@ -293,7 +298,6 @@ def path_to(
 			step_penult = path.steps[-2] if len(path.steps) >= 2 else None
 
 			path_branches = 0
-			path_good = False
 			path_base = EwPath(path_from = path)
 			for neigh in neighbors(step_last):
 				if neigh == step_penult:
@@ -303,9 +307,9 @@ def path_to(
 
 				branch = None
 				if path_branches == 0:
-					could_move = path_step(path, neigh)
+					could_move = path_step(path, neigh, user_data)
 				else:
-					branch = path_branch(path_base, neigh)
+					branch = path_branch(path_base, neigh, user_data)
 					if branch != None:
 						could_move = True
 						paths_walking_new.append(branch)
@@ -405,29 +409,7 @@ def map_draw(path = None, coord = None):
 		print(outstr)
 		y += 1
 
-"""
-	Player command to move themselves from one place to another.
-"""
-async def move(cmd):
-	if channel_name_is_poi(cmd.message.channel.name) == False:
-		return await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You must {} in a zone's channel.".format(cmd.tokens[0])))
-
-	resp = await ewcmd.start(cmd = cmd)
-
-	target_name = ewutils.flattenTokenListToString(cmd.tokens[1:])
-	if target_name == None or len(target_name) == 0:
-		return await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, "Where to?"))
-
-	user_data = EwUser(member = cmd.message.author)
-	poi_current = ewcfg.id_to_poi.get(user_data.poi)
-	poi = ewcfg.id_to_poi.get(target_name)
-
-	if poi == None:
-		return await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, "Never heard of it."))
-
-	if poi.id_poi == user_data.poi:
-		return await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, "You're already there, bitch."))
-
+def inaccessible(user_data = None, poi = None):
 	if(
 		len(poi.factions) > 0 and
 		user_data.life_state != ewcfg.life_state_corpse and
@@ -437,21 +419,55 @@ async def move(cmd):
 		len(poi.life_states) > 0 and
 		user_data.life_state not in poi.life_states
 	):
-		return await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, "You're not allowed to go there (bitch)."))
+		return True
+	else:
+		return False
+
+
+"""
+	Player command to move themselves from one place to another.
+"""
+async def move(cmd):
+	if channel_name_is_poi(cmd.message.channel.name) == False:
+		return await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You must {} in a zone's channel.".format(cmd.tokens[0])))
+
+	target_name = ewutils.flattenTokenListToString(cmd.tokens[1:])
+	if target_name == None or len(target_name) == 0:
+		return await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "Where to?"))
+
+	user_data = EwUser(member = cmd.message.author)
+	poi_current = ewcfg.id_to_poi.get(user_data.poi)
+	poi = ewcfg.id_to_poi.get(target_name)
+
+	if poi == None:
+		return await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "Never heard of it."))
+
+	if poi.id_poi == user_data.poi:
+		return await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You're already there, bitch."))
+
+	if inaccessible(user_data = user_data, poi = poi):
+		return await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You're not allowed to go there (bitch)."))
 
 	if user_data.life_state == ewcfg.life_state_corpse and user_data.busted:
-		return await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, "You're busted, bitch. You can't leave the sewers until your !revive."))
+		if user_data.poi == ewcfg.poi_id_thesewers:
+			return await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You're busted, bitch. You can't leave the sewers until your !revive."))
+		else:  # sometimes busted ghosts get stuck outside the sewers
+			user_data.poi = ewcfg.poi_id_thesewers
+			user_data.persist()
+			await ewrolemgr.updateRoles(cmd.client, cmd.message.author)
+			return
 
 	if poi.coord == None or poi_current == None or poi_current.coord == None:
 		path = EwPath(cost = 60)
 	else:
 		path = path_to(
 			poi_start = user_data.poi,
-			poi_end = target_name
+			poi_end = target_name,
+			user_data = user_data
 		)
 
 		if path == None:
-			return await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, "You don't know how to get there."))
+			return await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You don't know how to get there."))
 
 	global moves_active
 	global move_counter
@@ -465,7 +481,7 @@ async def move(cmd):
 
 	minutes = int(path.cost / 60)
 
-	await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, "You begin walking to {}.{}".format(
+	await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, "You begin walking to {}.{}".format(
 		poi.str_name,
 		(" It's {} minute{} away.".format(
 			minutes,
@@ -577,7 +593,7 @@ async def move(cmd):
 					)
 			else:
 				if val > 0:
-					#await asyncio.sleep(val/30)
+					#await asyncio.sleep(val/30) #fixme
 					await asyncio.sleep(val)
 
 """

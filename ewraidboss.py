@@ -19,7 +19,7 @@ async def writhe(cmd):
 
 	if user_data.life_state != ewcfg.life_state_grandfoe:
 		response = "Only the NEGASLIME {} can do that.".format(ewcfg.emote_negaslime)
-		await cmd.client.edit_message(resp, ewutils.formatMessage(cmd.message.author, response))
+		await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, response))
 	else:
 		# play animation
 		he = ewcfg.emote_he
@@ -91,6 +91,8 @@ async def writhe(cmd):
 				user_data_target.die()
 				user_data_target.persist()
 				await ewrolemgr.updateRoles(client = cmd.client, member = target)
+				sewerchannel = ewutils.get_channel(cmd.message.server, ewcfg.channel_sewers)
+				await cmd.client.send_message(sewerchannel, "{} ".format(ewcfg.emote_slimeskull) + ewutils.formatMessage(target, "You have been crushed by tendrils. {}".format(ewcfg.emote_slimeskull)))
 
 				victim_list.append(target)
 
