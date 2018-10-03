@@ -493,27 +493,48 @@ async def attack(cmd):
 				# sub-area consequences
 				if poi in ewcfg.limited_pvp_area_ids:
 					r = random.randint(1, 100)
-					user_dead = False
+					death_location = None
 
 					if poi in [ewcfg.poi_id_slimecorphq, ewcfg.poi_id_slimeoidlab]:
-						response = "Immediately, panels open in the sleek white walls, revealing turrets which swivel to point at {player}. " \
-						           "After a blinding burst of green light and a sizzling sound, {player} has been reduced to a smoking black " \
-						           "smear on the floor, which SlimeCorp sanitation drones wipe away moments later. {slimeskull}".format(
-										player = disp_name,
-										slimeskull = ewcfg.emote_slimeskull
-									)
-						user_dead = True
+						death_location = 'slimecorp'
 					elif poi == ewcfg.poi_id_stockexchange and r <= 10:  # 10 percent chance
-						response = "The cops are immediately called, but the response is sluggish as usual. Terrified of losing their hard-earned investments, " \
-						           "middle-aged men in suits and ties rush {player} down, bludgeoning him to death with their briefcases. {slimeskull}" \
-						           " The market is saved!!".format(
-										player = disp_name,
-										slimeskull = ewcfg.emote_slimeskull
-									)
+						death_location = 'stockexchange'
+					elif poi == ewcfg.poi_id_cinema and r <= 2:
+						death_location = 'cinema'
+					elif poi == ewcfg.poi_id_foodcourt and r <= 2:
+						death_location = 'foodcourt'
+					elif poi == ewcfg.poi_id_nlacu and r <= 10:
+						death_location = 'nlacu'
+					elif poi == ewcfg.poi_id_dojo and r <= 10:
+						death_location = 'dojo'
+					elif poi == ewcfg.poi_id_mine and r <= 5:
+						death_location = 'mine'
+					elif poi == ewcfg.poi_id_thecasino and r <= 5:
+						death_location = 'casino'
 
-
-					if user_dead:
+					if death_location is not None:
+						response += "\n\n"
+						if death_location == 'foodcourt':
+							response += ewcfg.limited_pvp_death_reports['foodcourt'].format(
+								player = disp_name,
+								slimeskull = ewcfg.emote_slimeskull,
+								food = ewcfg.slippery_foods[random.randint(0, len(ewcfg.slippery_foods) - 1)]
+							)
+						else:
+							response += ewcfg.limited_pvp_death_reports[death_location].format(
+								player = disp_name,
+								slimeskull = ewcfg.emote_slimeskull
+							)
 						user_data.die()
+						user_data.persist()  # necessary for updating the role
+						await ewrolemgr.updateRoles(client = cmd.client, member = cmd.message.author)
+
+						user_deathreport = "You fought in a dangerous location and got what you asked for. {}".format(ewcfg.emote_slimeskull)  # replace with customized death reports
+						user_deathreport = "{} ".format(ewcfg.emote_slimeskull) + ewutils.formatMessage(cmd.message.author, user_deathreport)
+						sewerchannel = ewutils.get_channel(cmd.message.server, ewcfg.channel_sewers)
+						await cmd.client.send_message(sewerchannel, user_deathreport)
+					else:
+						response += " You get the feeling that you aren't supposed to fight here."
 
 			else:
 				response = 'You are unable to attack {}.'.format(member.display_name)

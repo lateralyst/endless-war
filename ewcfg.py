@@ -1979,3 +1979,28 @@ limited_pvp_area_ids = [
 	poi_id_mine,
 	poi_id_thecasino
 ]
+
+limited_pvp_death_reports = {
+	'slimecorp': "Immediately, panels open in the sleek white walls, revealing turrets which swivel to point at {player}. After a blinding burst of green light and a sizzling sound, "
+	             "{player} has been reduced to a smoking black smear on the floor, which SlimeCorp sanitation drones wipe away moments later. {slimeskull}",
+	'stockexchange': "The cops are immediately called, but the response is sluggish as usual. Terrified of losing their hard-earned investments, "
+	                 "middle-aged men in suits and ties rush {player} down, bludgeoning him to death with their briefcases. {slimeskull} The market is saved!!",
+	'cinema': "Tragically, this attempted murder occurred on a day when the NLAC Cinemas were screening contraband animated films from a distant land to the east. "
+	          "The flashing lights and big sparkly eyes sent {player} into an epileptic fit. He was rushed to the hospital, but did not survive. {slimeskull}",
+	'foodcourt': "By complete random chance, {player} slips on a half-eaten {food} and hits their head with enough force to kill them instantly {slimeskull}. "
+	             "The cops swoop in after the fact and claim responsibility for ending {player}'s reign of terror. How disgusting.",
+	'nlacu': "Campus police arrive with heavy firepower, putting the ordinary NLACakaNM cops to shame. \"Surrender and die, {player}!!\" shouts one through a megaphone, "
+	         "as several squad cars' worth of NLACU campus security open fire, showering the entire area with lead until nothing remains. {player}'s remains are unrecognizeable. {slimeskull}",
+	'dojo': "The hulking green figure of the Dojo Master looms behind {player}. \"You tryna start trouble in my Dojo?\" he grumbles. He then proceeds to break every bone in "
+	        "{player}'s body before drop-kicking them into the sky where they vanish with a *ding*, Team Rocket-style. {slimeskull}",
+	'mine': "{player}'s sudden movement sets the ground to rumbling, triggering a cave-in!! Rocks fall from the cave ceiling, crushing them under their weight!! {slimeskull}",
+	'casino': "One of the Casino's enormous Slime Enforcers steps in. \"Excuse me, gentlemen,\" he booms in as soft a voice as he can manage, before punching {player} "
+	          "so hard as to send him rocketing across the casino to splatter against the far wall {slimeskull}. With a small bow, he returns silently to a dark corner."
+}
+
+# for the foodcourt death report
+slippery_foods = [
+	"pizza slice",
+	"burrito",
+	"chicken wing"
+]
