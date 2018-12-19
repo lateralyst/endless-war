@@ -7,6 +7,7 @@ import ewitem
 import ewrolemgr
 import ewstats
 from ew import EwUser, EwMarket
+from ewitem import EwItem
 
 """ class to send general data about an interaction to a command """
 class EwCmd:
@@ -108,6 +109,17 @@ async def data(cmd):
 		user_data = EwUser(member = cmd.message.author)
 		market_data = EwMarket(id_server = cmd.message.server.id)
 
+		cosmetics = ewitem.inventory(
+			id_user = cmd.message.author.id,
+			id_server = cmd.message.server.id,
+			item_type_filter = ewcfg.it_cosmetic
+		)
+		adorned_cosmetics = []
+		for cosmetic in cosmetics:
+			cos = EwItem(id_item = cosmetic.get('id_item'))
+			if cos.item_props['adorned'] == 'true':
+				adorned_cosmetics.append(cosmetic.get('name'))
+
 		poi = ewcfg.id_to_poi.get(user_data.poi)
 		if poi != None:
 			response = "You find yourself {} {}. ".format(poi.str_in, poi.str_name)
@@ -137,6 +149,9 @@ async def data(cmd):
 		if coinbounty != 0:
 			response += " SlimeCorp offers a bounty of {:,} SlimeCoin for your death.".format(coinbounty)
 
+		if len(adorned_cosmetics) > 0:
+			response += " You have a {} adorned.".format(ewutils.formatNiceList(adorned_cosmetics, 'and'))
+
 		if user_data.hunger > 0:
 			response += " You are {}% hungry.".format(
 				round(user_data.hunger * 100.0 / ewutils.hunger_max_bylevel(user_data.slimelevel), 1)
@@ -152,6 +167,17 @@ async def data(cmd):
 		member = cmd.mentions[0]
 		user_data = EwUser(member = member)
 		market_data = EwMarket(id_server = cmd.message.server.id)
+
+		cosmetics = ewitem.inventory(
+			id_user = user_data.id_user,
+			id_server = user_data.id_server,
+			item_type_filter = ewcfg.it_cosmetic
+		)
+		adorned_cosmetics = []
+		for cosmetic in cosmetics:
+			cos = EwItem(id_item = cosmetic.get('id_item'))
+			if cos.item_props['adorned'] == 'true':
+				adorned_cosmetics.append(cosmetic.get('name'))
 
 		if user_data.life_state == ewcfg.life_state_grandfoe:
 			poi = ewcfg.id_to_poi.get(user_data.poi)
@@ -185,6 +211,9 @@ async def data(cmd):
 
 			if coinbounty != 0:
 				response += " SlimeCorp offers a bounty of {:,} SlimeCoin for their death.".format(coinbounty)
+
+			if len(adorned_cosmetics) > 0:
+				response += " They have a {} adorned.".format(ewutils.formatNiceList(adorned_cosmetics, 'and'))
 
 	# Send the response to the player.
 	await cmd.client.send_message(cmd.message.channel, ewutils.formatMessage(cmd.message.author, response))
