@@ -172,6 +172,7 @@ cmd_accept = cmd_prefix + 'accept'
 cmd_refuse = cmd_prefix + 'refuse'
 cmd_reap = cmd_prefix + 'reap'
 cmd_sow = cmd_prefix + 'sow'
+cmd_slimernaliagreeting = cmd_prefix + 'yoslimernalia'
 
 # Slime costs/values
 slimes_onrevive = 20
