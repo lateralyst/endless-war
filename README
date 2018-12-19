@@ -124,3 +124,13 @@ CREATE TABLE farms (
 
 	PRIMARY KEY (id_server, id_user, farm)
 );
+
+CREATE TABLE districts (
+	id_server varchar(128) NOT NULL,
+    district varchar(32) NOT NULL,
+    controlling_faction varchar(32) NOT NULL DEFAULT '',
+    capturing_faction varchar(32) NOT NULL DEFAULT '',
+    capture_points bigint NOT NULL DEFAULT '0',
+
+	PRIMARY KEY (id_server, district)
+);
